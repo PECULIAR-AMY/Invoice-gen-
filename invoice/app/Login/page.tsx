@@ -3,50 +3,63 @@
 
 import {useState} from 'react'
 import { useSupabase} from "../supabase-provider"
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage(){
     const supabase = useSupabase()
+    const router = useRouter()
     const  [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [messages, setMessages] = useState("")
+    const [error, setError] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
 
 
-        const handleLogin = async () => {
-            const { error } = await await supabase.auth.signInWithPassword({
+        const handleLogin = async (e:React.FormEvent) => {
+         e.preventDefault()
+         setLoading(true)
+         setError(null)
+        
+         const { error } = await supabase.auth.signInWithPassword({
                 email,
-                password
+                password,
             })
-            if (error)setMessages(error.message)
-                else setMessages("Logged in Successfully")
-        }
-
-        const handleLogout = async () => {
-            await supabase.auth.signOut()
-            setMessages("Logged out successfully")
+            if (error) {
+                setError(error.message)
+            } else {
+                router.push("/dashboard")
+            }
+            setLoading(false)
         }
 
         return (
             <div className='p-6'>
-            <h1 className="text-3xl mb-4">Login</h1>
+            <form onSubmit={handleLogin} className='w-96 space-y-4 border p-6'>
+            <h1 className='text-2xl font-bold'>Login</h1>
+
             <input 
-            className='text-2xl mb-4 block'
+            className='w-full border p-4'
+            type='email'
             placeholder='Email'
-            value ={email}
-            onChange={e => setEmail(e.target.value)}
+            value={email}
+            onChange={(e) =>setEmail(e.target.value)}
+            required 
             />
-            <input 
-            className='text-2xl mb-4 block'
-            placeholder='password'
+
+            <input
+            className='w-full border p-2'
+            type='password'
+            placeholder='Password'
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
+            required 
             />
-            <button className='bg-red-700 text-white p-4 py-2 mr-2' onClick={handleLogin}>
-                Login 
+
+            {error && <p className='text-blue-500'>{error}</p>}
+
+            <button disabled={loading} className='w-full bg-black text-white p-2'>
+            {loading ? "Loggin in..." : "Login"}
             </button>
-            <button className='bg-gray-500 text-white p-4 py-2' onClick={handleLogout}>
-                Logout
-            </button>
-              {messages && <p className="mt-4">{messages}</p>}
+            </form>
             </div>
         )
 }
