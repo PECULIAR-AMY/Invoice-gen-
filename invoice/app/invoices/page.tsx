@@ -44,6 +44,16 @@ export default function CreateInvoicePage() {
     e.preventDefault()
 
     // 1️⃣ Create invoice
+
+    const { 
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        alert("you must be loggedin")
+        return
+    }
+
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
       .insert([
@@ -51,6 +61,7 @@ export default function CreateInvoicePage() {
           client_name: clientName,
           client_email: clientEmail,
           total,
+          user_id: user.id
         },
       ])
       .select()
