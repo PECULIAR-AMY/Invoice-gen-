@@ -1,10 +1,48 @@
+import { getUser } from "@/lib/getUser"
+import { getInvoiceAnalytics } from "@/lib/invoiceAnalytics"
+import { generateAIInsight } from "@/lib/aiInsights"
 
-export default function Home() {
+export default async function HomePage() {
+  const user = await getUser()
+  if (!user) return <p>Please log in</p>
+
+  const analytics = await getInvoiceAnalytics(user.id)
+  const aiInsight = await generateAIInsight(analytics)
+
   return (
-    <div className="">
-      <main className="">
-       <h1 className="text-3xl">i am jide from America</h1>
-      </main>
+    <main className="max-w-4xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">
+        Welcome back 👋
+      </h1>
+
+      {/* AI Insight */}
+      <section className="rounded-xl border p-5 bg-white shadow-sm">
+        <h2 className="font-medium mb-2">AI Business Insight</h2>
+        <p className="text-gray-700 whitespace-pre-line">
+          {aiInsight}
+        </p>
+      </section>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-2 gap-4">
+        <Metric
+          label="Outstanding Amount"
+          value={`₦${analytics.outstandingAmount}`}
+        />
+        <Metric
+          label="Overdue Invoices"
+          value={analytics.overdueCount}
+        />
+      </div>
+    </main>
+  )
+}
+
+function Metric({ label, value }: { label: string; value: any }) {
+  return (
+    <div className="border rounded-lg p-4 bg-white">
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-xl font-semibold">{value}</p>
     </div>
-  );
+  )
 }
