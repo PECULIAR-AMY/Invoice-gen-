@@ -1,12 +1,12 @@
-import { getUser } from "@/lib/getUser"
-import { getInvoiceAnalytics } from "@/lib/invoiceAnalytics"
+import { getUser } from "@/lib/getUsers"
+import { getHomeInsights } from "@/lib/insights"
 import { generateAIInsight } from "@/lib/aiInsights"
 
 export default async function HomePage() {
   const user = await getUser()
   if (!user) return <p>Please log in</p>
 
-  const analytics = await getInvoiceAnalytics(user.id)
+  const analytics = await getHomeInsights(user.id)
   const aiInsight = await generateAIInsight(analytics)
 
   return (
@@ -38,7 +38,7 @@ export default async function HomePage() {
   )
 }
 
-function Metric({ label, value }: { label: string; value: any }) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="border rounded-lg p-4 bg-white">
       <p className="text-sm text-gray-500">{label}</p>
