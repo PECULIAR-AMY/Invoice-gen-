@@ -5,7 +5,7 @@ export async function getHomeInsights(invoiceId: string) {
     const supabase = await  createSupabaseServerClient()
 
 
-    const { data: invoices, error  } = await Supabase
+    const { data: invoices, error  } = await supabase
     .from('invoices')
     .select("client_name, total, status, created_at")
 
@@ -14,27 +14,24 @@ export async function getHomeInsights(invoiceId: string) {
       const now = new Date()
 
 //      outstanding (unpaid) invoices 
-      const unPaidInvoices = invoices.filter(i => i.status ==="pending")
-      const OutstandingAmount = unPaidInvoices.reduce((sum, i) => sum + Number(i.total), 
-      
-      0)
+      const unpaidInvoices = invoices.filter(i => i.status ==="pending")
+      const outstandingAmount = unpaidInvoices.reduce((sum, i) => sum + Number(i.total), 0)
 
     //   overdue invoices (14 days)
     const overdueInvoices = unpaidInvoices.filter (i => {
        const created = new Date(i.created_at)
-       const diffDays = (now.getTime() -created.getTime()/(1000 * 60 * 60 * 24)
-    return diffDay > 14 
-    )  
+       const diffDays = (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)
+    return diffDays > 14 
     })
 
-    Revenue comparison (this month vs last month)
-    const thisMonth = net.getMonth()
+    // Revenue comparison (this month vs last month)
+    const thisMonth = now.getMonth()
     const lastMonth = thisMonth - 1
 
     let thisMonthRevenue = 0
     let lastMonthRevenue = 0
 
-    InvoiceListPage.forEach(i => {
+    invoices.forEach(i => {
         if (i.status !== "paid") return 
         const month = new Date(i.created_at).getMonth()
 
@@ -46,16 +43,16 @@ export async function getHomeInsights(invoiceId: string) {
 
     // top client this month 
 
-    const clientTotal : Record<string, number> = {}
+    const clientTotals : Record<string, number> = {}
 
-    InvoiceListPage.forEach(i=> {
+    invoices.forEach(i=> {
         if (i.status !=="paid") return 
-        if (new Date(i.created_at).getMonth() !== thisMont)return 
+        if (new Date(i.created_at).getMonth() !== thisMonth)return 
 
         clientTotals[i.client_name] = (clientTotals[i.client_name] || 0) + Number(i.total)
     })
 
-    const topClientEntry = object.entries(clientTotals).sort((a, b) => b[1] -a[1])
+    const topClientEntry = Object.entries(clientTotals).sort((a, b) => b[1] - a[1])[0]
 
     return {
         outstandingAmount,

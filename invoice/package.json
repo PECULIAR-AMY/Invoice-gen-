@@ -16,6 +16,7 @@
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
     "next": "16.1.1",
+    "openai": "^6.17.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.8.0"
