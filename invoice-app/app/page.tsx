@@ -1,11 +1,7 @@
-
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen justify-center bg-zinc-50 font-sans dark:bg-black">
-  
-      <h1>Hi Nancy</h1>
-      
-    </div>
-  );
+  redirect('/login');
+
+  return <p>Redirecting...</p>; // optional fallback
 }
