@@ -1,3 +1,7 @@
+    "use client"
+
+
+
 import { useMutation } from "@tanstack/react-query";
 import { loginUser, signupUser, logoutUser } from "./api";
 import { LoginInput, SignupInput } from "./types";
