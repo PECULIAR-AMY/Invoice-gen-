@@ -82,13 +82,14 @@ export default function InvoiceFormPage() {
             <thead className="bg-gray-100 text-sm">
               <tr>
                 <th className="border p-2">No</th>
-                <th className="border p-2">Customer Name / Company</th>
+                <th className="border p-2">Customer Name/Company</th>
+                <th className="border p-2">Phone Number</th>
                 <th className="border p-2">Description of Goods</th>
                 <th className="border p-2">Quantity</th>
                 <th className="border p-2">Amount</th>
                 <th className="border p-2">Remark</th>
                 <th className="border p-2">Note</th>
-                <th className="border p-2">Phone Number</th>
+                
               </tr>
             </thead>
 
