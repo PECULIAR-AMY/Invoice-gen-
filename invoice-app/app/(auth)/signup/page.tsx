@@ -1,3 +1,5 @@
+" use client "
+
 import { SignupForm } from "@/app/feature/auth/components/SignupForm";
 
 export default function SignupPage() {
