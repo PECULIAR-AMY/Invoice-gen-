@@ -1,11 +1,18 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
+interface InvoiceRow {
+    quantity: number;
+    amount: number;
+    [key: string]: unknown;
+}
+
 export async function Post(req: Request) {
+const cookieStore = await cookies();
 const supabase = createServerClient (
 process.env.NEXT_PUBLIC_SUPABASE_URL!,
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies }
+    { cookies: cookieStore }
 );
 
 const { rows } = await req.json();
@@ -19,7 +26,7 @@ if (!user) {
 }
 
 const total = rows.reduce(
-    (sum: number, row: any) =>
+    (sum: number, row: InvoiceRow) =>
         sum + row.quantity * row.amount,
     0
 );
@@ -40,12 +47,12 @@ if (error) {
     return new Response(error.message, { status: 500});
 }
 
-const items = rows.map((row: any) => ({
+const items = rows.map((row: InvoiceRow) => ({
     invoice_id: invoice.id,
     ...row,
 }))
 
-await supabase.from("invoice_items").insert(items):
+await supabase.from("invoice_items").insert(items);
 
-return response.json(invoice);
+return Response.json(invoice);
 }
