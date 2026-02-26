@@ -189,7 +189,7 @@ export default function InvoiceFormPage() {
                     onClick={() => removeRow(i)}
                     className="text-red-600"
                   >
-                    Delete
+                    Delete 
                   </button>
                 </td>
               </tr>
