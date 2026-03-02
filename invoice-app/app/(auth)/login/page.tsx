@@ -1,4 +1,4 @@
-" use Client "
+"use client";
 
 
 import { LoginForm } from "@/app/feature/auth/components/LoginForm";
