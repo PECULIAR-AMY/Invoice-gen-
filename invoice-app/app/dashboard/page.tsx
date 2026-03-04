@@ -49,65 +49,89 @@ export default function InvoiceFormPage() {
   const total = rows.reduce((sum, row) => sum + row.quantity * row.unit_price, 0);
 
   // Submit invoice to Supabase
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return alert("Please log in to create invoice.");
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    alert("Please log in to create invoice.");
+    return;
+  }
 
-    try {
-      // 1️⃣ Insert or get customer
-      const { data: customer, error: customerError } = await supabase
+  try {
+    // STEP 1: Get or create customer properly
+    let customerId: string;
+
+    const { data: existingCustomer, error: fetchCustomerError } =
+      await supabase
         .from("customers")
-        .upsert(
-          { name: customerName, phone, user_id: user.id },
-          { onConflict: "user_id,name" }
-        )
-        .select("*")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("name", customerName)
         .single();
 
-      if (customerError) throw customerError;
+    if (existingCustomer) {
+      customerId = existingCustomer.id;
+    } else {
+      const { data: newCustomer, error: createCustomerError } =
+        await supabase
+          .from("customers")
+          .insert([
+            {
+              name: customerName,
+              phone,
+              user_id: user.id,
+            },
+          ])
+          .select("id")
+          .single();
 
-      // 2️⃣ Insert invoice
-      const { data: invoice, error: invoiceError } = await supabase
-        .from("invoices")
-        .insert([
-          {
-            user_id: user.id,
-            customer_id: customer.id,
-            invoice_number: `INV-${Date.now()}`,
-            total,
-          },
-        ])
-        .select("*")
-        .single();
+      if (createCustomerError) throw createCustomerError;
 
-      if (invoiceError) throw invoiceError;
-
-      // 3️⃣ Insert invoice items
-      const itemsToInsert = rows.map(row => ({
-        invoice_id: invoice.id,
-        user_id: user.id,
-        description: row.description,
-        quantity: row.quantity,
-        unit_price: row.unit_price,
-        amount: row.quantity * row.unit_price,
-        remark: row.remark,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("invoice_items")
-        .insert(itemsToInsert);
-
-      if (itemsError) throw itemsError;
-
-      // 4️⃣ Redirect to invoice created page
-      router.push(`/invoice-created/${invoice.id}`);
-    } catch (err) {
-      console.error(err);
-      alert("Error creating invoice. Check console for details.");
+      customerId = newCustomer.id;
     }
-  };
+
+    // STEP 2: Create invoice (ONLY in invoices table)
+    const invoiceNumber = `INV-${Date.now()}`;
+
+    const { data: invoice, error: invoiceError } = await supabase
+      .from("invoices")
+      .insert([
+        {
+          user_id: user.id,
+          customer_id: customerId,
+          invoice_number: invoiceNumber,
+          total_amount: total,
+        },
+      ])
+      .select("id")
+      .single();
+
+    if (invoiceError) throw invoiceError;
+
+    // STEP 3: Insert invoice items
+    const itemsPayload = rows.map((row) => ({
+      invoice_id: invoice.id,
+      user_id: user.id,
+      description: row.description,
+      quantity: row.quantity,
+      unit_price: row.unit_price,
+      amount: row.quantity * row.unit_price,
+      remark: row.remark,
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("invoice_items")
+      .insert(itemsPayload);
+
+    if (itemsError) throw itemsError;
+
+    router.push(`/invoice-created/${invoice.id}`);
+  } catch (err) {
+    console.error("Invoice creation failed:", err);
+    alert("Error creating invoice. Check console.");
+  }
+}
 
   return (
     <form onSubmit={handleSubmit} className="p-6 max-w-7xl mx-auto">
